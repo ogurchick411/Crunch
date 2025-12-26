@@ -1,3 +1,4 @@
+
 class ChatConnection {
     constructor() {
         this.ws = null;
@@ -19,7 +20,8 @@ class ChatConnection {
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-            console.log('✅ Подключено к серверу');
+            console.log('✅ WebSocket ОТКРЫТ');
+            console.log('ReadyState:', this.ws.readyState);
             this.reconnectAttempts = 0;
             showNotification('Подключено к чату', 'success');
             
@@ -31,21 +33,25 @@ class ChatConnection {
         };
 
         this.ws.onmessage = (event) => {
+            console.log('📩 Получено сообщение:', event.data);
             try {
                 const data = JSON.parse(event.data);
                 this.handleMessage(data);
             } catch (error) {
-                console.error('Ошибка парсинга сообщения:', error);
+                console.error('❌ Ошибка парсинга:', error);
             }
         };
 
         this.ws.onerror = (error) => {
-            console.error('WebSocket ошибка:', error);
+            console.error('❌ WebSocket ошибка:', error);
+            console.log('ReadyState:', this.ws?.readyState);
             showNotification('Ошибка соединения', 'error');
         };
 
-        this.ws.onclose = () => {
-            console.log('Соединение закрыто');
+        this.ws.onclose = (event) => {
+            console.log('🔌 WebSocket ЗАКРЫТ');
+            console.log('Code:', event.code, 'Reason:', event.reason);
+            console.log('ReadyState:', this.ws?.readyState);
             if (this.reconnectAttempts < this.maxReconnectAttempts) {
                 setTimeout(() => {
                     this.reconnectAttempts++;
@@ -57,8 +63,17 @@ class ChatConnection {
     }
 
     send(data) {
+        console.log('📤 Попытка отправки:', data);
+        console.log('WebSocket существует?', !!this.ws);
+        console.log('ReadyState:', this.ws?.readyState);
+        console.log('OPEN = 1, текущий =', this.ws?.readyState);
+        
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            console.log('✅ Отправляем данные');
             this.ws.send(JSON.stringify(data));
+        } else {
+            console.error('❌ WebSocket не готов! ReadyState:', this.ws?.readyState);
+            showNotification('WebSocket не подключен', 'error');
         }
     }
 
@@ -95,7 +110,7 @@ class ChatConnection {
     }
 }
 
-
+// Глобальные переменные
 let chatConnection = null;
 let currentUsername = '';
 let typingTimer = null;
@@ -161,14 +176,16 @@ function joinChat() {
     localStorage.setItem('crunch_username', username);
     currentUsernameEl.textContent = username;
 
-    // Переключаем экраны СРАЗУ
-    nameScreen.classList.add('hidden');
-    chatScreen.classList.remove('hidden');
-    messageInput.focus();
-
-    // Подключаемся к WebSocket
+    // Подключаемся к WebSocket СНАЧАЛА
     chatConnection = new ChatConnection();
     chatConnection.connect(username);
+
+    // Ждём 500ms и переключаем экраны
+    setTimeout(() => {
+        nameScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
+        messageInput.focus();
+    }, 500);
 }
 
 // Отправка сообщения
