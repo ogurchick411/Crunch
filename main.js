@@ -6,7 +6,6 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
 // Настройки
 const PORT = process.env.PORT || 10000;
@@ -14,6 +13,15 @@ const PORT = process.env.PORT || 10000;
 console.log('🚀 Запуск сервера...');
 console.log('PORT:', PORT);
 console.log('NODE_ENV:', process.env.NODE_ENV);
+
+// WebSocket сервер с правильными настройками для production
+const wss = new WebSocket.Server({ 
+    server,
+    clientTracking: true,
+    perMessageDeflate: false
+});
+
+console.log('✅ WebSocket сервер создан');
 
 // Хранилище
 const clients = new Map(); // Map<WebSocket, {username, id}>
@@ -29,25 +37,51 @@ app.get('/', (req, res) => {
 });
 
 // WebSocket обработка
-wss.on('connection', (ws) => {
-    console.log('Новое подключение');
+wss.on('connection', (ws, req) => {
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    console.log('🔌 Новое подключение от:', clientIp);
+    console.log('Всего клиентов:', wss.clients.size);
 
     ws.on('message', (message) => {
         try {
             const data = JSON.parse(message);
+            console.log('📩 Получено:', data.type, 'от', data.username || 'unknown');
             handleMessage(ws, data);
         } catch (error) {
-            console.error('Ошибка обработки сообщения:', error);
+            console.error('❌ Ошибка обработки сообщения:', error);
         }
     });
 
     ws.on('close', () => {
+        console.log('❌ Клиент отключился');
         handleDisconnect(ws);
     });
 
     ws.on('error', (error) => {
-        console.error('WebSocket ошибка:', error);
+        console.error('❌ WebSocket ошибка:', error);
     });
+
+    // Пинг для поддержания соединения
+    ws.isAlive = true;
+    ws.on('pong', () => {
+        ws.isAlive = true;
+    });
+});
+
+// Heartbeat для поддержания соединения
+const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) {
+            console.log('💀 Мёртвое соединение, закрываем');
+            return ws.terminate();
+        }
+        ws.isAlive = false;
+        ws.ping();
+    });
+}, 30000);
+
+wss.on('close', () => {
+    clearInterval(interval);
 });
 
 // Обработка сообщений
@@ -170,15 +204,15 @@ function generateId() {
 }
 
 // Запуск сервера
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`
     ╔════════════════════════════════════╗
-    ║             СRUNCH                 ║
+    ║             CRUNCH                 ║
     ║                                    ║
     ║  Сервер запущен на порту ${PORT}   ║
-    ║  http://localhost:${PORT}          ║
+    ║  Listening on 0.0.0.0:${PORT}     ║
     ║                                    ║
-    ║  WebSocket: ws://localhost:${PORT} ║
+    ║  WebSocket готов к подключениям   ║
     ╚════════════════════════════════════╝
     `);
 });
