@@ -1,3 +1,4 @@
+// Серверная часть на Node.js с WebSocket
 const WebSocket = require('ws');
 const http = require('http');
 const express = require('express');
@@ -7,18 +8,27 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const PORT = process.env.PORT || 8080;
-const clients = new Map();
-const messageHistory = [];
+// Настройки
+const PORT = process.env.PORT || 10000;
+
+console.log('🚀 Запуск сервера...');
+console.log('PORT:', PORT);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
+// Хранилище
+const clients = new Map(); // Map<WebSocket, {username, id}>
+const messageHistory = []; // История последних 50 сообщений
 const MAX_HISTORY = 50;
 const typingUsers = new Set();
 
+// Раздача статики
 app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// WebSocket обработка
 wss.on('connection', (ws) => {
     console.log('Новое подключение');
 
@@ -40,6 +50,7 @@ wss.on('connection', (ws) => {
     });
 });
 
+// Обработка сообщений
 function handleMessage(ws, data) {
     switch(data.type) {
         case 'join':
@@ -54,6 +65,7 @@ function handleMessage(ws, data) {
     }
 }
 
+// Присоединение пользователя
 function handleJoin(ws, data) {
     const clientData = {
         username: data.username,
@@ -63,11 +75,13 @@ function handleJoin(ws, data) {
     
     clients.set(ws, clientData);
     
+    // Отправляем историю новому пользователю
     ws.send(JSON.stringify({
         type: 'history',
         messages: messageHistory
     }));
     
+    // Уведомляем всех о новом пользователе
     broadcast({
         type: 'userJoined',
         username: data.username,
@@ -78,6 +92,7 @@ function handleJoin(ws, data) {
     console.log(`${data.username} присоединился. Онлайн: ${clients.size}`);
 }
 
+// Обработка сообщения чата
 function handleChatMessage(ws, data) {
     const client = clients.get(ws);
     if (!client) return;
@@ -90,16 +105,19 @@ function handleChatMessage(ws, data) {
         id: generateId()
     };
 
+    // Добавляем в историю
     messageHistory.push(messageData);
     if (messageHistory.length > MAX_HISTORY) {
         messageHistory.shift();
     }
 
+    // Рассылаем всем
     broadcast(messageData);
     
     console.log(`[${client.username}]: ${data.text}`);
 }
 
+// Обработка индикатора печати
 function handleTyping(ws, data) {
     const client = clients.get(ws);
     if (!client) return;
@@ -110,12 +128,14 @@ function handleTyping(ws, data) {
         typingUsers.delete(client.username);
     }
 
+    // Отправляем всем список печатающих
     broadcast({
         type: 'typing',
         users: Array.from(typingUsers)
     });
 }
 
+// Отключение пользователя
 function handleDisconnect(ws) {
     const client = clients.get(ws);
     if (!client) return;
@@ -133,6 +153,7 @@ function handleDisconnect(ws) {
     console.log(`${client.username} покинул чат. Онлайн: ${clients.size}`);
 }
 
+// Рассылка всем клиентам
 function broadcast(data, excludeWs = null) {
     const message = JSON.stringify(data);
     
@@ -143,14 +164,16 @@ function broadcast(data, excludeWs = null) {
     });
 }
 
+// Генерация ID
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
+// Запуск сервера
 server.listen(PORT, () => {
     console.log(`
     ╔════════════════════════════════════╗
-    ║              CRUNCH                ║
+    ║             СRUNCH                 ║
     ║                                    ║
     ║  Сервер запущен на порту ${PORT}   ║
     ║  http://localhost:${PORT}          ║
@@ -160,10 +183,11 @@ server.listen(PORT, () => {
     `);
 });
 
+// Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('Shutting down server…');
+    console.log('Закрытие сервера...');
     server.close(() => {
-        console.log('Server closed');
+        console.log('Сервер закрыт');
         process.exit(0);
     });
 });
