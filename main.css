@@ -406,10 +406,11 @@ body {
     color: var(--text-primary);
     outline: none;
     resize: none;
-    min-height: clamp(44px, 10vw, 48px);
-    max-height: 120px;
+    height: clamp(44px, 10vw, 48px);
+    max-height: 48px;
     transition: all 0.3s ease;
     line-height: 1.5;
+    overflow-y: auto;
 }
 
 #messageInput:focus {

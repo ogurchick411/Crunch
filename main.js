@@ -9,11 +9,11 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 10000;
 
 console.log('='.repeat(50));
-console.log('🚀 CRUNCH MESSENGER');
+console.log('CRUNCH MESSENGER');
 console.log('PORT:', PORT);
 console.log('='.repeat(50));
 
-// WebSocket с правильными настройками
+ 
 const wss = new WebSocket.Server({ 
     server,
     clientTracking: true,
@@ -25,13 +25,13 @@ const messageHistory = [];
 const MAX_HISTORY = 50;
 const typingUsers = new Set();
 
-// Статика
+ 
 app.use(express.static(__dirname));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Проверка здоровья для Render
+ 
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'ok', 
@@ -39,12 +39,11 @@ app.get('/health', (req, res) => {
         uptime: process.uptime()
     });
 });
-
-// WebSocket подключение
+ 
 wss.on('connection', (ws, req) => {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    console.log('✅ Новое подключение от:', ip);
-    console.log('📊 Всего клиентов:', wss.clients.size);
+    console.log('New connection from:', ip);
+    console.log('Total clients:', wss.clients.size);
 
     ws.isAlive = true;
     ws.on('pong', () => { ws.isAlive = true; });
@@ -52,28 +51,28 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (message) => {
         try {
             const data = JSON.parse(message);
-            console.log('📩 Получено:', data.type, data.username || '');
+            console.log('Received:', data.type, data.username || '');
             handleMessage(ws, data);
         } catch (error) {
-            console.error('❌ Ошибка:', error.message);
+            console.error('Error:', error.message);
         }
     });
 
     ws.on('close', () => {
-        console.log('❌ Клиент отключился');
+        console.log('Client disconnected');
         handleDisconnect(ws);
     });
 
     ws.on('error', (error) => {
-        console.error('❌ WS ошибка:', error.message);
+        console.error('WS error:', error.message);
     });
 });
 
-// Heartbeat
+ 
 const heartbeat = setInterval(() => {
     wss.clients.forEach((ws) => {
         if (!ws.isAlive) {
-            console.log('💀 Закрываем мёртвое соединение');
+            console.log('Closing dead connection');
             return ws.terminate();
         }
         ws.isAlive = false;
@@ -105,15 +104,15 @@ function handleJoin(ws, data) {
     };
     
     clients.set(ws, clientData);
-    console.log('👤', data.username, 'присоединился. Онлайн:', clients.size);
+    console.log('👤', data.username, 'joined. Online:', clients.size);
     
-    // Отправляем историю
+     
     ws.send(JSON.stringify({
         type: 'history',
         messages: messageHistory
     }));
     
-    // Уведомляем всех
+     
     broadcast({
         type: 'userJoined',
         username: data.username,
@@ -125,7 +124,7 @@ function handleJoin(ws, data) {
 function handleChatMessage(ws, data) {
     const client = clients.get(ws);
     if (!client) {
-        console.log('⚠️ Сообщение от неизвестного клиента');
+        console.log('⚠️ Message from unknown client');
         return;
     }
 
@@ -167,7 +166,7 @@ function handleDisconnect(ws) {
     const client = clients.get(ws);
     if (!client) return;
 
-    console.log('👋', client.username, 'вышел. Онлайн:', clients.size - 1);
+    console.log('👋', client.username, 'left. Online:', clients.size - 1);
     
     typingUsers.delete(client.username);
     clients.delete(ws);
@@ -192,23 +191,23 @@ function broadcast(data, excludeWs = null) {
     });
     
     if (data.type === 'message') {
-        console.log('📤 Разослано', sent, 'клиентам');
+        console.log('Sent to', sent, 'clients');
     }
 }
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log('\n' + '='.repeat(50));
-    console.log('✅ СЕРВЕР ЗАПУЩЕН');
-    console.log('🌐 Порт:', PORT);
-    console.log('🔌 WebSocket готов');
+    console.log('SERVER STARTED');
+    console.log('Port:', PORT);
+    console.log('🔌 WebSocket ready');
     console.log('='.repeat(50) + '\n');
 });
 
 process.on('SIGTERM', () => {
-    console.log('Остановка сервера...');
+    console.log('Stopping server...');
     wss.clients.forEach(ws => ws.close());
     server.close(() => {
-        console.log('Сервер остановлен');
+        console.log('Server stopped');
         process.exit(0);
     });
 });
