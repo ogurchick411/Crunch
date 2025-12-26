@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'crunch_secret_key_change_in_production';
 
 console.log('='.repeat(50));
-console.log('🚀 CRUNCH MESSENGER');
+console.log('CRUNCH MESSENGER');
 console.log('PORT:', PORT);
 console.log('='.repeat(50));
 

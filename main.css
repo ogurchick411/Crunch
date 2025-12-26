@@ -5,7 +5,7 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-:root {
+body.dark-theme {
     --bg-primary: #0a0a0a;
     --bg-secondary: #1a1a1a;
     --bg-tertiary: #2a2a2a;
@@ -22,6 +22,23 @@
     --glow: rgba(255, 255, 255, 0.1);
 }
 
+body.light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --bg-tertiary: #e5e5e5;
+    --bg-input: #fafafa;
+    --text-primary: #0a0a0a;
+    --text-secondary: #6a6a6a;
+    --text-tertiary: #a0a0a0;
+    --accent: #0a0a0a;
+    --accent-dim: #3a3a3a;
+    --border: #e0e0e0;
+    --success: #22c55e;
+    --error: #ef4444;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --glow: rgba(0, 0, 0, 0.05);
+}
+
 html, body {
     width: 100%;
     height: 100%;
@@ -32,9 +49,10 @@ html, body {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, #050505 100%);
+    background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
+    transition: background 0.3s, color 0.3s;
 }
 
 .screen {
@@ -51,72 +69,27 @@ body {
     overflow: hidden;
 }
 
-.screen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
-    pointer-events: none;
-}
-
 .hidden {
     display: none !important;
 }
 
-/* Экран входа */
-.name-container {
+.auth-container {
     text-align: center;
-    padding: clamp(30px, 8vw, 60px) clamp(20px, 6vw, 40px);
+    padding: clamp(40px, 8vw, 60px) clamp(30px, 6vw, 40px);
     max-width: 450px;
     width: 90%;
     background: var(--bg-secondary);
     border-radius: 24px;
     border: 1px solid var(--border);
     box-shadow: 0 20px 60px var(--shadow);
-    position: relative;
-    overflow: hidden;
-}
-
-.name-container::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
-    animation: rotate 20s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.logo {
-    position: relative;
-    z-index: 1;
 }
 
 .logo h1 {
-    font-size: clamp(40px, 12vw, 64px);
+    font-size: clamp(48px, 12vw, 64px);
     font-weight: 800;
-    letter-spacing: clamp(6px, 2vw, 12px);
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, #ffffff 0%, #808080 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glow 3s ease-in-out infinite;
-}
-
-@keyframes glow {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.2); }
+    letter-spacing: clamp(8px, 2vw, 12px);
+    margin-bottom: 8px;
+    color: var(--text-primary);
 }
 
 .subtitle {
@@ -124,38 +97,59 @@ body {
     color: var(--text-secondary);
     letter-spacing: clamp(2px, 0.5vw, 3px);
     text-transform: uppercase;
-    margin-bottom: clamp(30px, 8vw, 50px);
+    margin-bottom: clamp(30px, 6vw, 40px);
     opacity: 0.8;
 }
 
-.name-form {
+.auth-tabs {
     display: flex;
-    flex-direction: column;
-    gap: clamp(16px, 4vw, 20px);
-    position: relative;
-    z-index: 1;
+    gap: 8px;
+    margin-bottom: 30px;
 }
 
-#nameInput {
-    padding: clamp(14px, 3.5vw, 18px) clamp(18px, 4.5vw, 24px);
-    font-size: clamp(15px, 3.5vw, 16px);
+.auth-tab {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.auth-tab.active {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-form input {
+    padding: clamp(14px, 3.5vw, 16px) clamp(18px, 4.5vw, 20px);
+    font-size: clamp(14px, 3.5vw, 15px);
     background: var(--bg-input);
     border: 2px solid var(--border);
     border-radius: 12px;
     color: var(--text-primary);
     outline: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
+    transition: all 0.3s;
 }
 
-#nameInput:focus {
+.auth-form input:focus {
     border-color: var(--accent);
-    background: var(--bg-tertiary);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 4px var(--glow);
 }
 
 .primary-btn {
-    padding: clamp(16px, 4vw, 18px) clamp(28px, 7vw, 36px);
+    padding: clamp(16px, 4vw, 18px);
     font-size: clamp(14px, 3.5vw, 15px);
     font-weight: 700;
     background: var(--accent);
@@ -163,37 +157,31 @@ body {
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: clamp(1px, 0.4vw, 2px);
+    transition: all 0.3s;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    position: relative;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
 }
 
-.primary-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow);
 }
 
 .primary-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
 }
 
-.primary-btn:hover::before {
-    width: 300px;
-    height: 300px;
+.auth-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
 }
 
-/* Чат */
+.auth-footer p {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
 .chat-container {
     width: 100%;
     height: 100vh;
@@ -201,16 +189,13 @@ body {
     display: flex;
     flex-direction: column;
     background: var(--bg-primary);
-    position: fixed;
-    top: 0;
-    left: 0;
 }
 
 .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 32px);
+    padding: clamp(16px, 3.5vw, 20px) clamp(20px, 4vw, 32px);
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
@@ -219,24 +204,20 @@ body {
 .header-left {
     display: flex;
     align-items: center;
-    gap: clamp(12px, 3vw, 20px);
-    min-width: 0;
+    gap: clamp(16px, 3vw, 20px);
 }
 
 .header-left h2 {
-    font-size: clamp(18px, 5vw, 28px);
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 800;
-    letter-spacing: clamp(3px, 1.2vw, 6px);
-    background: linear-gradient(135deg, #ffffff 0%, #909090 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    letter-spacing: clamp(4px, 1.2vw, 6px);
+    color: var(--text-primary);
 }
 
 .online-count {
     font-size: clamp(10px, 2.5vw, 12px);
     color: var(--text-secondary);
-    padding: clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px);
+    padding: clamp(5px, 1vw, 6px) clamp(12px, 2.5vw, 16px);
     background: var(--bg-tertiary);
     border-radius: 20px;
     letter-spacing: 1px;
@@ -248,13 +229,13 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: clamp(12px, 3vw, 20px);
+    gap: clamp(12px, 3vw, 16px);
 }
 
 .username {
     font-size: clamp(12px, 3vw, 14px);
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
     display: none;
 }
 
@@ -265,23 +246,55 @@ body {
     border-radius: 10px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+}
+
+.icon-btn:hover {
+    background: var(--bg-input);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.05);
 }
 
 .icon-btn:active {
     transform: scale(0.95);
 }
 
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px clamp(20px, 4vw, 32px);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.search-bar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--glow);
+}
+
 .messages-container {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 32px);
-    background: linear-gradient(180deg, var(--bg-primary) 0%, #0d0d0d 100%);
+    padding: clamp(20px, 4vw, 32px) clamp(16px, 3vw, 32px);
+    background: var(--bg-primary);
     -webkit-overflow-scrolling: touch;
 }
 
@@ -298,6 +311,7 @@ body {
     flex-direction: column;
     gap: clamp(6px, 1.5vw, 8px);
     animation: messageIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: opacity 0.3s;
 }
 
 @keyframes messageIn {
@@ -311,6 +325,13 @@ body {
     }
 }
 
+@keyframes messageOut {
+    to {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+}
+
 .message-header {
     display: flex;
     align-items: center;
@@ -321,7 +342,6 @@ body {
     font-size: clamp(13px, 3vw, 14px);
     font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: 0.5px;
 }
 
 .message-time {
@@ -331,7 +351,7 @@ body {
 }
 
 .message-content {
-    padding: clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 20px);
+    padding: clamp(12px, 3vw, 14px) clamp(16px, 3.5vw, 18px);
     background: var(--bg-secondary);
     border-radius: 16px;
     border-left: 3px solid var(--border);
@@ -340,14 +360,12 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     max-width: 85%;
-    position: relative;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
 }
 
 .message.own .message-content {
-    background: linear-gradient(135deg, var(--bg-tertiary) 0%, #252525 100%);
+    background: var(--bg-tertiary);
     border-left-color: var(--accent);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
 }
 
 .message.system {
@@ -366,17 +384,18 @@ body {
     font-style: italic;
 }
 
-.typing-indicator {
-    padding: clamp(10px, 2.5vw, 12px) clamp(16px, 4vw, 32px);
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
-    animation: fadeIn 0.3s ease;
-    flex-shrink: 0;
+.edited-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-left: 6px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.typing-indicator {
+    padding: clamp(10px, 2.5vw, 12px) clamp(20px, 4vw, 32px);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .typing-text {
@@ -387,9 +406,9 @@ body {
 
 .input-container {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: clamp(12px, 3vw, 16px);
-    padding: clamp(16px, 4vw, 24px) clamp(16px, 4vw, 32px);
+    padding: clamp(16px, 4vw, 20px) clamp(20px, 4vw, 32px);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
@@ -397,65 +416,88 @@ body {
 
 #messageInput {
     flex: 1;
-    padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px);
+    padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 18px);
     font-size: clamp(14px, 3.5vw, 15px);
     font-family: inherit;
     background: var(--bg-input);
     border: 2px solid var(--border);
-    border-radius: 14px;
+    border-radius: 12px;
     color: var(--text-primary);
     outline: none;
-    resize: none;
-    height: clamp(44px, 10vw, 48px);
-    max-height: 48px;
-    transition: all 0.3s ease;
-    line-height: 1.5;
-    overflow-y: auto;
+    transition: all 0.3s;
 }
 
 #messageInput:focus {
-    border-color: var(--accent-dim);
-    background: var(--bg-tertiary);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
-}
-
-#messageInput::placeholder {
-    color: var(--text-tertiary);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--glow);
 }
 
 .send-btn {
     padding: clamp(12px, 3vw, 14px);
     min-width: clamp(44px, 10vw, 48px);
     height: clamp(44px, 10vw, 48px);
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+    background: var(--accent);
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     color: var(--bg-primary);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-    flex-shrink: 0;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px var(--shadow);
 }
 
 .send-btn:active {
     transform: scale(0.95);
 }
 
-.send-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+.context-menu {
+    position: fixed;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 10px 40px var(--shadow);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.context-item {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.context-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.context-item.danger {
+    color: var(--error);
 }
 
 .notification {
     position: fixed;
-    top: clamp(16px, 4vw, 32px);
-    right: clamp(16px, 4vw, 32px);
-    left: clamp(16px, 4vw, auto);
+    top: clamp(20px, 4vw, 32px);
+    right: clamp(20px, 4vw, 32px);
     max-width: 320px;
-    padding: clamp(14px, 3.5vw, 16px) clamp(20px, 5vw, 28px);
+    padding: clamp(14px, 3.5vw, 16px) clamp(20px, 5vw, 24px);
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -464,7 +506,6 @@ body {
     font-weight: 600;
     animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1000;
-    backdrop-filter: blur(10px);
 }
 
 @keyframes slideIn {
@@ -481,13 +522,11 @@ body {
 .notification.success {
     border-color: var(--success);
     color: var(--success);
-    box-shadow: 0 10px 40px rgba(74, 222, 128, 0.2);
 }
 
 .notification.error {
     border-color: var(--error);
     color: var(--error);
-    box-shadow: 0 10px 40px rgba(248, 113, 113, 0.2);
 }
 
 .messages-container::-webkit-scrollbar {
@@ -510,33 +549,5 @@ body {
 @media (min-width: 640px) {
     .username {
         display: block;
-    }
-    
-    .notification {
-        left: auto;
-    }
-}
-
-@media (hover: hover) {
-    .primary-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
-    }
-    
-    .icon-btn:hover {
-        background: var(--bg-input);
-        border-color: var(--accent);
-        color: var(--accent);
-        transform: scale(1.05);
-    }
-    
-    .message-content:hover {
-        background: var(--bg-tertiary);
-        transform: translateX(4px);
-    }
-    
-    .send-btn:hover {
-        transform: scale(1.08) rotate(5deg);
-        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
     }
 }
