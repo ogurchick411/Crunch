@@ -1,4 +1,3 @@
-// WebSocket соединение
 class ChatConnection {
     constructor() {
         this.ws = null;
@@ -8,12 +7,19 @@ class ChatConnection {
     }
 
     connect(username) {
-        const wsUrl = `ws://${window.location.hostname}:8080`;
+        // Определяем протокол: ws для локалки, wss для production
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const wsUrl = `${protocol}//${host}`;
+        
+        console.log('🔌 Подключение к:', wsUrl);
+        console.log('Protocol:', window.location.protocol);
+        console.log('Host:', host);
         
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-            console.log('Подключено к серверу');
+            console.log('✅ Подключено к серверу');
             this.reconnectAttempts = 0;
             showNotification('Подключено к чату', 'success');
             
@@ -89,7 +95,7 @@ class ChatConnection {
     }
 }
 
-// Глобальные переменные
+
 let chatConnection = null;
 let currentUsername = '';
 let typingTimer = null;
