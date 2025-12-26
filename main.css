@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -21,23 +22,33 @@
     --glow: rgba(255, 255, 255, 0.1);
 }
 
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    -webkit-overflow-scrolling: touch;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
     background: linear-gradient(135deg, var(--bg-primary) 0%, #050505 100%);
     color: var(--text-primary);
     line-height: 1.6;
-    overflow: hidden;
 }
 
-/* Общие стили */
 .screen {
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: opacity 0.3s ease;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
 }
 
 .screen::before {
@@ -55,10 +66,10 @@ body {
     display: none !important;
 }
 
-/* Экран выбора имени */
+/* Экран входа */
 .name-container {
     text-align: center;
-    padding: 60px 40px;
+    padding: clamp(30px, 8vw, 60px) clamp(20px, 6vw, 40px);
     max-width: 450px;
     width: 90%;
     background: var(--bg-secondary);
@@ -92,15 +103,14 @@ body {
 }
 
 .logo h1 {
-    font-size: 64px;
+    font-size: clamp(40px, 12vw, 64px);
     font-weight: 800;
-    letter-spacing: 12px;
+    letter-spacing: clamp(6px, 2vw, 12px);
     margin-bottom: 12px;
     background: linear-gradient(135deg, #ffffff 0%, #808080 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
     animation: glow 3s ease-in-out infinite;
 }
 
@@ -110,25 +120,25 @@ body {
 }
 
 .subtitle {
-    font-size: 13px;
+    font-size: clamp(11px, 2.5vw, 13px);
     color: var(--text-secondary);
-    letter-spacing: 3px;
+    letter-spacing: clamp(2px, 0.5vw, 3px);
     text-transform: uppercase;
-    margin-bottom: 50px;
+    margin-bottom: clamp(30px, 8vw, 50px);
     opacity: 0.8;
 }
 
 .name-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: clamp(16px, 4vw, 20px);
     position: relative;
     z-index: 1;
 }
 
 #nameInput {
-    padding: 18px 24px;
-    font-size: 16px;
+    padding: clamp(14px, 3.5vw, 18px) clamp(18px, 4.5vw, 24px);
+    font-size: clamp(15px, 3.5vw, 16px);
     background: var(--bg-input);
     border: 2px solid var(--border);
     border-radius: 12px;
@@ -145,8 +155,8 @@ body {
 }
 
 .primary-btn {
-    padding: 18px 36px;
-    font-size: 15px;
+    padding: clamp(16px, 4vw, 18px) clamp(28px, 7vw, 36px);
+    font-size: clamp(14px, 3.5vw, 15px);
     font-weight: 700;
     background: var(--accent);
     color: var(--bg-primary);
@@ -154,10 +164,11 @@ body {
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    letter-spacing: 2px;
+    letter-spacing: clamp(1px, 0.4vw, 2px);
     text-transform: uppercase;
     position: relative;
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .primary-btn::before {
@@ -173,9 +184,8 @@ body {
     transition: width 0.6s, height 0.6s;
 }
 
-.primary-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+.primary-btn:active {
+    transform: scale(0.97);
 }
 
 .primary-btn:hover::before {
@@ -183,40 +193,40 @@ body {
     height: 300px;
 }
 
-.primary-btn:active {
-    transform: translateY(0);
-}
-
-/* Экран чата */
+/* Чат */
 .chat-container {
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     background: var(--bg-primary);
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
-/* Шапка */
 .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 32px;
+    padding: clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 32px);
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
 .header-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: clamp(12px, 3vw, 20px);
+    min-width: 0;
 }
 
 .header-left h2 {
-    font-size: 28px;
+    font-size: clamp(18px, 5vw, 28px);
     font-weight: 800;
-    letter-spacing: 6px;
+    letter-spacing: clamp(3px, 1.2vw, 6px);
     background: linear-gradient(135deg, #ffffff 0%, #909090 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -224,30 +234,32 @@ body {
 }
 
 .online-count {
-    font-size: 12px;
+    font-size: clamp(10px, 2.5vw, 12px);
     color: var(--text-secondary);
-    padding: 6px 16px;
+    padding: clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px);
     background: var(--bg-tertiary);
     border-radius: 20px;
     letter-spacing: 1px;
     font-weight: 600;
     border: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 .header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: clamp(12px, 3vw, 20px);
 }
 
 .username {
-    font-size: 14px;
+    font-size: clamp(12px, 3vw, 14px);
     color: var(--text-secondary);
     font-weight: 500;
+    display: none;
 }
 
 .icon-btn {
-    padding: 10px;
+    padding: clamp(8px, 2vw, 10px);
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -257,36 +269,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.icon-btn:hover {
-    background: var(--bg-input);
-    border-color: var(--accent);
-    color: var(--accent);
-    transform: scale(1.05);
+.icon-btn:active {
+    transform: scale(0.95);
 }
 
-/* Область сообщений */
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 32px;
+    overflow-x: hidden;
+    padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 32px);
     background: linear-gradient(180deg, var(--bg-primary) 0%, #0d0d0d 100%);
+    -webkit-overflow-scrolling: touch;
 }
 
 .messages-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: clamp(16px, 4vw, 20px);
     max-width: 900px;
     margin: 0 auto;
 }
 
-/* Сообщение */
 .message {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: clamp(6px, 1.5vw, 8px);
     animation: messageIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -304,38 +314,34 @@ body {
 .message-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: clamp(8px, 2vw, 10px);
 }
 
 .message-author {
-    font-size: 14px;
+    font-size: clamp(13px, 3vw, 14px);
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: 0.5px;
 }
 
 .message-time {
-    font-size: 11px;
+    font-size: clamp(10px, 2.5vw, 11px);
     color: var(--text-tertiary);
     font-weight: 500;
 }
 
 .message-content {
-    padding: 16px 20px;
+    padding: clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 20px);
     background: var(--bg-secondary);
     border-radius: 16px;
     border-left: 3px solid var(--border);
-    font-size: 15px;
+    font-size: clamp(14px, 3.5vw, 15px);
     line-height: 1.6;
     word-wrap: break-word;
-    max-width: 75%;
+    word-break: break-word;
+    max-width: 85%;
     position: relative;
     transition: all 0.2s ease;
-}
-
-.message-content:hover {
-    background: var(--bg-tertiary);
-    transform: translateX(4px);
 }
 
 .message.own .message-content {
@@ -353,19 +359,19 @@ body {
     border: 1px dashed var(--border);
     border-left: none;
     color: var(--text-tertiary);
-    font-size: 13px;
+    font-size: clamp(12px, 3vw, 13px);
     text-align: center;
-    padding: 10px 16px;
+    padding: clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px);
     max-width: 100%;
     font-style: italic;
 }
 
-/* Индикатор печати */
 .typing-indicator {
-    padding: 12px 32px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(16px, 4vw, 32px);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     animation: fadeIn 0.3s ease;
+    flex-shrink: 0;
 }
 
 @keyframes fadeIn {
@@ -374,25 +380,25 @@ body {
 }
 
 .typing-text {
-    font-size: 13px;
+    font-size: clamp(12px, 3vw, 13px);
     color: var(--text-secondary);
     font-style: italic;
 }
 
-/* Поле ввода */
 .input-container {
     display: flex;
     align-items: flex-end;
-    gap: 16px;
-    padding: 24px 32px;
+    gap: clamp(12px, 3vw, 16px);
+    padding: clamp(16px, 4vw, 24px) clamp(16px, 4vw, 32px);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 #messageInput {
     flex: 1;
-    padding: 14px 20px;
-    font-size: 15px;
+    padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px);
+    font-size: clamp(14px, 3.5vw, 15px);
     font-family: inherit;
     background: var(--bg-input);
     border: 2px solid var(--border);
@@ -400,8 +406,8 @@ body {
     color: var(--text-primary);
     outline: none;
     resize: none;
-    min-height: 48px;
-    max-height: 150px;
+    min-height: clamp(44px, 10vw, 48px);
+    max-height: 120px;
     transition: all 0.3s ease;
     line-height: 1.5;
 }
@@ -417,9 +423,9 @@ body {
 }
 
 .send-btn {
-    padding: 14px;
-    min-width: 48px;
-    height: 48px;
+    padding: clamp(12px, 3vw, 14px);
+    min-width: clamp(44px, 10vw, 48px);
+    height: clamp(44px, 10vw, 48px);
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
     border: none;
     border-radius: 14px;
@@ -430,11 +436,7 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-}
-
-.send-btn:hover {
-    transform: scale(1.08) rotate(5deg);
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
 }
 
 .send-btn:active {
@@ -444,24 +446,23 @@ body {
 .send-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    transform: none;
 }
 
-/* Уведомления */
 .notification {
     position: fixed;
-    top: 32px;
-    right: 32px;
-    padding: 16px 28px;
+    top: clamp(16px, 4vw, 32px);
+    right: clamp(16px, 4vw, 32px);
+    left: clamp(16px, 4vw, auto);
+    max-width: 320px;
+    padding: clamp(14px, 3.5vw, 16px) clamp(20px, 5vw, 28px);
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 10px 40px var(--shadow);
-    font-size: 14px;
+    font-size: clamp(13px, 3.5vw, 14px);
     font-weight: 600;
     animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1000;
-    max-width: 320px;
     backdrop-filter: blur(10px);
 }
 
@@ -488,9 +489,8 @@ body {
     box-shadow: 0 10px 40px rgba(248, 113, 113, 0.2);
 }
 
-/* Скроллбар */
 .messages-container::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
 }
 
 .messages-container::-webkit-scrollbar-track {
@@ -499,49 +499,43 @@ body {
 
 .messages-container::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 5px;
+    border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
     background: var(--text-tertiary);
 }
 
-/* Адаптив */
-@media (max-width: 768px) {
-    .logo h1 {
-        font-size: 48px;
-        letter-spacing: 8px;
-    }
-    
-    .name-container {
-        padding: 40px 30px;
-    }
-    
-    .chat-header {
-        padding: 16px 20px;
-    }
-    
-    .header-left h2 {
-        font-size: 22px;
-        letter-spacing: 4px;
-    }
-    
-    .messages-container {
-        padding: 20px 16px;
-    }
-    
-    .message-content {
-        max-width: 85%;
-    }
-    
-    .input-container {
-        padding: 16px 20px;
+@media (min-width: 640px) {
+    .username {
+        display: block;
     }
     
     .notification {
-        top: 16px;
-        right: 16px;
-        left: 16px;
-        max-width: none;
+        left: auto;
+    }
+}
+
+@media (hover: hover) {
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+    
+    .icon-btn:hover {
+        background: var(--bg-input);
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: scale(1.05);
+    }
+    
+    .message-content:hover {
+        background: var(--bg-tertiary);
+        transform: translateX(4px);
+    }
+    
+    .send-btn:hover {
+        transform: scale(1.08) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
     }
 }

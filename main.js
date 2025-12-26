@@ -1,4 +1,3 @@
-// Серверная часть на Node.js с WebSocket
 const WebSocket = require('ws');
 const http = require('http');
 const express = require('express');
@@ -7,48 +6,56 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// Настройки
 const PORT = process.env.PORT || 10000;
 
-console.log('🚀 Запуск сервера...');
+console.log('='.repeat(50));
+console.log('🚀 CRUNCH MESSENGER');
 console.log('PORT:', PORT);
-console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('='.repeat(50));
 
-// WebSocket сервер с правильными настройками для production
+// WebSocket с правильными настройками
 const wss = new WebSocket.Server({ 
     server,
     clientTracking: true,
     perMessageDeflate: false
 });
 
-console.log('✅ WebSocket сервер создан');
-
-// Хранилище
-const clients = new Map(); // Map<WebSocket, {username, id}>
-const messageHistory = []; // История последних 50 сообщений
+const clients = new Map();
+const messageHistory = [];
 const MAX_HISTORY = 50;
 const typingUsers = new Set();
 
-// Раздача статики
-app.use(express.static(path.join(__dirname)));
-
+// Статика
+app.use(express.static(__dirname));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// WebSocket обработка
+// Проверка здоровья для Render
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        clients: clients.size,
+        uptime: process.uptime()
+    });
+});
+
+// WebSocket подключение
 wss.on('connection', (ws, req) => {
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    console.log('🔌 Новое подключение от:', clientIp);
-    console.log('Всего клиентов:', wss.clients.size);
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    console.log('✅ Новое подключение от:', ip);
+    console.log('📊 Всего клиентов:', wss.clients.size);
+
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
 
     ws.on('message', (message) => {
         try {
             const data = JSON.parse(message);
-            console.log('📩 Получено:', data.type, 'от', data.username || 'unknown');
+            console.log('📩 Получено:', data.type, data.username || '');
             handleMessage(ws, data);
         } catch (error) {
-            console.error('❌ Ошибка обработки сообщения:', error);
+            console.error('❌ Ошибка:', error.message);
         }
     });
 
@@ -58,21 +65,15 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('error', (error) => {
-        console.error('❌ WebSocket ошибка:', error);
-    });
-
-    // Пинг для поддержания соединения
-    ws.isAlive = true;
-    ws.on('pong', () => {
-        ws.isAlive = true;
+        console.error('❌ WS ошибка:', error.message);
     });
 });
 
-// Heartbeat для поддержания соединения
-const interval = setInterval(() => {
+// Heartbeat
+const heartbeat = setInterval(() => {
     wss.clients.forEach((ws) => {
-        if (ws.isAlive === false) {
-            console.log('💀 Мёртвое соединение, закрываем');
+        if (!ws.isAlive) {
+            console.log('💀 Закрываем мёртвое соединение');
             return ws.terminate();
         }
         ws.isAlive = false;
@@ -80,11 +81,8 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-wss.on('close', () => {
-    clearInterval(interval);
-});
+wss.on('close', () => clearInterval(heartbeat));
 
-// Обработка сообщений
 function handleMessage(ws, data) {
     switch(data.type) {
         case 'join':
@@ -99,59 +97,56 @@ function handleMessage(ws, data) {
     }
 }
 
-// Присоединение пользователя
 function handleJoin(ws, data) {
     const clientData = {
         username: data.username,
-        id: generateId(),
+        id: Date.now() + Math.random(),
         joinedAt: new Date()
     };
     
     clients.set(ws, clientData);
+    console.log('👤', data.username, 'присоединился. Онлайн:', clients.size);
     
-    // Отправляем историю новому пользователю
+    // Отправляем историю
     ws.send(JSON.stringify({
         type: 'history',
         messages: messageHistory
     }));
     
-    // Уведомляем всех о новом пользователе
+    // Уведомляем всех
     broadcast({
         type: 'userJoined',
         username: data.username,
         onlineCount: clients.size,
         timestamp: new Date().toISOString()
     });
-    
-    console.log(`${data.username} присоединился. Онлайн: ${clients.size}`);
 }
 
-// Обработка сообщения чата
 function handleChatMessage(ws, data) {
     const client = clients.get(ws);
-    if (!client) return;
+    if (!client) {
+        console.log('⚠️ Сообщение от неизвестного клиента');
+        return;
+    }
 
     const messageData = {
         type: 'message',
         text: data.text,
         username: client.username,
         timestamp: data.timestamp || new Date().toISOString(),
-        id: generateId()
+        id: Date.now() + Math.random()
     };
 
-    // Добавляем в историю
+    console.log('💬', client.username + ':', data.text.substring(0, 50));
+
     messageHistory.push(messageData);
     if (messageHistory.length > MAX_HISTORY) {
         messageHistory.shift();
     }
 
-    // Рассылаем всем
     broadcast(messageData);
-    
-    console.log(`[${client.username}]: ${data.text}`);
 }
 
-// Обработка индикатора печати
 function handleTyping(ws, data) {
     const client = clients.get(ws);
     if (!client) return;
@@ -162,18 +157,18 @@ function handleTyping(ws, data) {
         typingUsers.delete(client.username);
     }
 
-    // Отправляем всем список печатающих
     broadcast({
         type: 'typing',
         users: Array.from(typingUsers)
     });
 }
 
-// Отключение пользователя
 function handleDisconnect(ws) {
     const client = clients.get(ws);
     if (!client) return;
 
+    console.log('👋', client.username, 'вышел. Онлайн:', clients.size - 1);
+    
     typingUsers.delete(client.username);
     clients.delete(ws);
 
@@ -183,45 +178,37 @@ function handleDisconnect(ws) {
         onlineCount: clients.size,
         timestamp: new Date().toISOString()
     });
-
-    console.log(`${client.username} покинул чат. Онлайн: ${clients.size}`);
 }
 
-// Рассылка всем клиентам
 function broadcast(data, excludeWs = null) {
     const message = JSON.stringify(data);
+    let sent = 0;
     
     clients.forEach((client, ws) => {
         if (ws !== excludeWs && ws.readyState === WebSocket.OPEN) {
             ws.send(message);
+            sent++;
         }
     });
+    
+    if (data.type === 'message') {
+        console.log('📤 Разослано', sent, 'клиентам');
+    }
 }
 
-// Генерация ID
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// Запуск сервера
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-    ╔════════════════════════════════════╗
-    ║             CRUNCH                 ║
-    ║                                    ║
-    ║  Сервер запущен на порту ${PORT}   ║
-    ║  Listening on 0.0.0.0:${PORT}     ║
-    ║                                    ║
-    ║  WebSocket готов к подключениям   ║
-    ╚════════════════════════════════════╝
-    `);
+    console.log('\n' + '='.repeat(50));
+    console.log('✅ СЕРВЕР ЗАПУЩЕН');
+    console.log('🌐 Порт:', PORT);
+    console.log('🔌 WebSocket готов');
+    console.log('='.repeat(50) + '\n');
 });
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('Закрытие сервера...');
+    console.log('Остановка сервера...');
+    wss.clients.forEach(ws => ws.close());
     server.close(() => {
-        console.log('Сервер закрыт');
+        console.log('Сервер остановлен');
         process.exit(0);
     });
 });
